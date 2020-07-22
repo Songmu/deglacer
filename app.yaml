@@ -1,3 +1,4 @@
 runtime: go113
+main: ./cmd/deglacer
 includes:
 - secret.yaml

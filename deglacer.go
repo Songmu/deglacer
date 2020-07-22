@@ -1,4 +1,4 @@
-package main
+package deglacer
 
 import (
 	"encoding/json"
@@ -17,14 +17,7 @@ import (
 	"github.com/slack-go/slack/slackevents"
 )
 
-func main() {
-	if err := run(os.Args[1:]); err != nil {
-		log.Println(err)
-		os.Exit(1)
-	}
-}
-
-func run(argv []string) error {
+func Run(argv []string) error {
 	port := os.Getenv("PORT")
 	if port == "" {
 		port = "8080"
