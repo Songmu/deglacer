@@ -147,6 +147,7 @@ func callback(ev *slackevents.LinkSharedEvent) error {
 				continue
 			}
 			unfurls[link.URL] = slack.Attachment{
+				AuthorIcon: comment.Author.AvatarImage.URL,
 				AuthorLink: fmt.Sprintf("https://%s.kibe.la/@%s", kibelaTeam, comment.Author.Account),
 				AuthorName: comment.Author.Account,
 				Title:      fmt.Sprintf(`comment for "%s"`, note.Title),
@@ -159,6 +160,7 @@ func callback(ev *slackevents.LinkSharedEvent) error {
 			continue
 		}
 		unfurls[link.URL] = slack.Attachment{
+			AuthorIcon: note.Author.AvatarImage.URL,
 			AuthorLink: fmt.Sprintf("https://%s.kibe.la/@%s", kibelaTeam, note.Author.Account),
 			AuthorName: note.Author.Account,
 			Title:      note.Title,
