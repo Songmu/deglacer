@@ -1,0 +1,25 @@
+{
+  "name": "deglacer",
+  "description": "Slack App for unfurling Kibela URL",
+  "keywords": [
+    "go",
+    "slack",
+    "kibela"
+  ],
+  "website": "http://github.com/Songmu/deglacer",
+  "repository": "http://github.com/Songmu/deglacer",
+  "env": {
+    "SLACK_TOKEN": {
+      "description": "Slack OAuth Access Token"
+    },
+    "SLACK_VERIFICATION_TOKEN": {
+      "description": "Slack Verification Token"
+    },
+    "KIBELA_TEAM": {
+      "description": "Kibela Team Name"
+    },
+    "KIBELA_TOKEN": {
+      "description": "Kibela Access Token"
+    }
+  }
+}
