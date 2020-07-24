@@ -2,6 +2,10 @@ u := $(if $(update),-u)
 
 export GO111MODULE=on
 
+.PHONY: build
+build: deps
+	go build -ldflags=$(BUILD_LDFLAGS) -o bin/deglacer ./cmd/deglacer
+
 .PHONY: deps
 deps:
 	go get ${u} -d
