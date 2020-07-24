@@ -169,6 +169,10 @@ func callback(ev *slackevents.LinkSharedEvent) error {
 			Ts:         json.Number(fmt.Sprintf("%d", note.PublishedAt.Time.Unix())),
 		}
 	}
+
+	if len(unfurls) == 0 {
+		return nil
+	}
 	_, _, err := slackCli.PostMessage(ev.Channel, slack.MsgOptionUnfurl(ev.MessageTimeStamp.String(), unfurls))
 	return err
 }
