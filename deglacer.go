@@ -1,6 +1,7 @@
 package deglacer
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
@@ -98,7 +99,7 @@ func index(w http.ResponseWriter, r *http.Request) {
 				w.WriteHeader(http.StatusBadRequest)
 				return
 			}
-			if err := callback(inEv); err != nil {
+			if err := callback(r.Context(), inEv); err != nil {
 				log.Println(err)
 				w.WriteHeader(http.StatusInternalServerError)
 				return
@@ -117,7 +118,7 @@ var (
 	spacesReg   = regexp.MustCompile(`\s+`)
 )
 
-func callback(ev *slackevents.LinkSharedEvent) error {
+func callback(ctx context.Context, ev *slackevents.LinkSharedEvent) error {
 	unfurls := make(map[string]slack.Attachment, len(ev.Links))
 
 	for _, link := range ev.Links {
@@ -134,7 +135,7 @@ func callback(ev *slackevents.LinkSharedEvent) error {
 			continue
 		}
 		id, _ := strconv.Atoi(m[1])
-		note, err := kibelaCli.GetNote(id)
+		note, err := kibelaCli.GetNote(ctx, id)
 		if err != nil {
 			log.Println(err)
 			continue
@@ -147,7 +148,7 @@ func callback(ev *slackevents.LinkSharedEvent) error {
 		)
 		if m := fragmentReg.FindStringSubmatch(u.Fragment); len(m) > 1 {
 			id, _ := strconv.Atoi(m[1])
-			comment, err := kibelaCli.GetComment(id)
+			comment, err := kibelaCli.GetComment(ctx, id)
 			if err != nil {
 				log.Println(err)
 				continue
@@ -174,6 +175,6 @@ func callback(ev *slackevents.LinkSharedEvent) error {
 	if len(unfurls) == 0 {
 		return nil
 	}
-	_, _, err := slackCli.PostMessage(ev.Channel, slack.MsgOptionUnfurl(ev.MessageTimeStamp.String(), unfurls))
+	_, _, err := slackCli.PostMessageContext(ctx, ev.Channel, slack.MsgOptionUnfurl(ev.MessageTimeStamp.String(), unfurls))
 	return err
 }
