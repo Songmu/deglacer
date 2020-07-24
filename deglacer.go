@@ -3,29 +3,53 @@ package deglacer
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"log"
 	"net/http"
 	"net/url"
 	"os"
+	"os/signal"
 	"regexp"
 	"strconv"
 	"strings"
+	"syscall"
 
 	"github.com/Songmu/kibelasync/kibela"
 	"github.com/slack-go/slack"
 	"github.com/slack-go/slack/slackevents"
+	"golang.org/x/sync/errgroup"
 )
 
 func Run(argv []string) error {
+	if err := initialize(); err != nil {
+		return err
+	}
 	port := os.Getenv("PORT")
 	if port == "" {
 		port = "8080"
 	}
 
-	http.HandleFunc("/", index)
-	return http.ListenAndServe(":"+port, nil)
+	var eg errgroup.Group
+
+	srv := &http.Server{Addr: ":" + port, Handler: http.HandlerFunc(index)}
+	eg.Go(func() error {
+		err := srv.ListenAndServe()
+		if err != nil && err != http.ErrServerClosed {
+			return err
+		}
+		return nil
+	})
+
+	c := make(chan os.Signal, 1)
+	signal.Notify(c, os.Interrupt, syscall.SIGTERM)
+	sig := <-c
+	log.Printf("received signal %s, shutting down\n", sig)
+	eg.Go(func() error {
+		return srv.Shutdown(context.Background())
+	})
+	return eg.Wait()
 }
 
 var (
@@ -35,23 +59,24 @@ var (
 	slackVerificationToken string
 )
 
-func init() {
+func initialize() error {
 	// KIBELA_TOKEN and KIBELA_TEAM are required
 	var err error
 	kibelaCli, err = kibela.New("0.0.1+deglacer")
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 	kibelaTeam = os.Getenv("KIBELA_TEAM")
 	slackVerificationToken = os.Getenv("SLACK_VERIFICATION_TOKEN")
 	if slackVerificationToken == "" {
-		log.Fatal("env SLACK_VERIFICATION_TOKEN required")
+		return errors.New("env SLACK_VERIFICATION_TOKEN required")
 	}
 	slackToken := os.Getenv("SLACK_TOKEN")
 	if slackToken == "" {
-		log.Fatal("env SLACK_TOKEN is empty")
+		return errors.New("env SLACK_TOKEN is empty")
 	}
 	slackCli = slack.New(slackToken)
+	return nil
 }
 
 func index(w http.ResponseWriter, r *http.Request) {
