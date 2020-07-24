@@ -139,6 +139,12 @@ func callback(ev *slackevents.LinkSharedEvent) error {
 			log.Println(err)
 			continue
 		}
+		var (
+			author      = note.Author
+			title       = note.Title
+			text        = note.Summary
+			publishedAt = note.PublishedAt
+		)
 		if m := fragmentReg.FindStringSubmatch(u.Fragment); len(m) > 1 {
 			id, _ := strconv.Atoi(m[1])
 			comment, err := kibelaCli.GetComment(id)
@@ -146,27 +152,21 @@ func callback(ev *slackevents.LinkSharedEvent) error {
 				log.Println(err)
 				continue
 			}
-			unfurls[link.URL] = slack.Attachment{
-				AuthorLink: fmt.Sprintf("https://%s.kibe.la/@%s", kibelaTeam, comment.Author.Account),
-				AuthorName: comment.Author.Account,
-				Title:      fmt.Sprintf(`comment for "%s"`, note.Title),
-				TitleLink:  link.URL,
-				Text:       spacesReg.ReplaceAllString(comment.Summary, " "),
-				Footer:     "Kibela",
-				FooterIcon: "https://cdn.kibe.la/assets/shortcut_icon-99b5d6891a0a53624ab74ef26a28079e37c4f953af6ea62396f060d3916df061.png",
-				Ts:         json.Number(fmt.Sprintf("%d", comment.PublishedAt.Time.Unix())),
-			}
-			continue
+			author = comment.Author
+			title = fmt.Sprintf(`comment for "%s"`, title)
+			text = comment.Summary
+			publishedAt = comment.PublishedAt
 		}
 		unfurls[link.URL] = slack.Attachment{
-			AuthorLink: fmt.Sprintf("https://%s.kibe.la/@%s", kibelaTeam, note.Author.Account),
-			AuthorName: note.Author.Account,
-			Title:      note.Title,
+			AuthorIcon: author.AvatarImage.URL,
+			AuthorLink: fmt.Sprintf("https://%s.kibe.la/@%s", kibelaTeam, author.Account),
+			AuthorName: author.Account,
+			Title:      title,
 			TitleLink:  link.URL,
-			Text:       spacesReg.ReplaceAllString(note.Summary, " "),
+			Text:       spacesReg.ReplaceAllString(text, " "),
 			Footer:     "Kibela",
 			FooterIcon: "https://cdn.kibe.la/assets/shortcut_icon-99b5d6891a0a53624ab74ef26a28079e37c4f953af6ea62396f060d3916df061.png",
-			Ts:         json.Number(fmt.Sprintf("%d", note.PublishedAt.Time.Unix())),
+			Ts:         json.Number(fmt.Sprintf("%d", publishedAt.Time.Unix())),
 		}
 	}
 
