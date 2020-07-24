@@ -158,7 +158,8 @@ func callback(ev *slackevents.LinkSharedEvent) error {
 			publishedAt = comment.PublishedAt
 		}
 		unfurls[link.URL] = slack.Attachment{
-			AuthorIcon: author.AvatarImage.URL,
+			// We can't use kibela's avatar URL for an icon, because it's not a public resource.
+			// AuthorIcon: author.AvatarImage.URL
 			AuthorLink: fmt.Sprintf("https://%s.kibe.la/@%s", kibelaTeam, author.Account),
 			AuthorName: author.Account,
 			Title:      title,
