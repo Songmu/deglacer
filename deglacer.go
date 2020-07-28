@@ -53,10 +53,10 @@ func Run(argv []string) error {
 }
 
 var (
-	kibelaCli              *kibela.Kibela
-	slackCli               *slack.Client
-	kibelaTeam             string
-	slackVerificationToken string
+	kibelaCli          *kibela.Kibela
+	slackCli           *slack.Client
+	kibelaTeam         string
+	slackSigningSecret string
 )
 
 func initialize() error {
@@ -67,9 +67,9 @@ func initialize() error {
 		return err
 	}
 	kibelaTeam = os.Getenv("KIBELA_TEAM")
-	slackVerificationToken = os.Getenv("SLACK_VERIFICATION_TOKEN")
-	if slackVerificationToken == "" {
-		return errors.New("env SLACK_VERIFICATION_TOKEN required")
+	slackSigningSecret = os.Getenv("SLACK_SIGNING_SECRET")
+	if slackSigningSecret == "" {
+		return errors.New("env SLACK_SIGNING_SECRET required")
 	}
 	slackToken := os.Getenv("SLACK_TOKEN")
 	if slackToken == "" {
@@ -90,10 +90,20 @@ func index(w http.ResponseWriter, r *http.Request) {
 			w.WriteHeader(http.StatusBadRequest)
 			return
 		}
-		ev, err := slackevents.ParseEvent(json.RawMessage(body),
-			slackevents.OptionVerifyToken(&slackevents.TokenComparator{
-				VerificationToken: slackVerificationToken,
-			}))
+		sv, err := slack.NewSecretsVerifier(r.Header, slackSigningSecret)
+		if err != nil {
+			log.Println(err)
+			w.WriteHeader(http.StatusBadRequest)
+			return
+		}
+		sv.Write(body)
+		if err := sv.Ensure(); err != nil {
+			log.Println(err)
+			w.WriteHeader(http.StatusBadRequest)
+			return
+		}
+
+		ev, err := slackevents.ParseEvent(json.RawMessage(body), slackevents.OptionNoVerifyToken())
 		if err != nil {
 			log.Println(err)
 			w.WriteHeader(http.StatusBadRequest)
