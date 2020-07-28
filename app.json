@@ -12,8 +12,8 @@
     "SLACK_TOKEN": {
       "description": "Slack OAuth Access Token"
     },
-    "SLACK_VERIFICATION_TOKEN": {
-      "description": "Slack Verification Token"
+    "SLACK_SIGNING_SECRET": {
+      "description": "Slack Signing Secret to verify signature"
     },
     "KIBELA_TEAM": {
       "description": "Kibela Team Name"

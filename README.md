@@ -41,7 +41,7 @@ deglacerは木べらを用いる調理手法である、déglacer(デグラッ�
     - App unfurl domains を展開し、 Add Domain で、 {`KIBELA_TEAM`}.kibe.la を入力し、Save Changes
 4. 左メニュー Install App を開き、 Install App to Workspace -> Allow
 5. OAuth Access Token が表示されるのでメモ (`SLACK_TOKEN`)
-6. Basic Information を開き App CredentialsのVerification Tokenをメモ (`SLACK_VERIFICATION_TOKEN`)
+6. Basic Information を開き App CredentialsのSigning Secretをメモ (`SLACK_SIGNING_SECRET`)
 
 ※後で戻ってくるので、Slack Appの管理画面は開いたままにしておく。
 
@@ -52,7 +52,7 @@ deglacerはGoで書かれたWebアプリケーションなので、任意の場�
 - `KIBELA_TEAM`: Kibelaのチーム名
 - `KIBELA_TOKEN`: 手順1で取得したKibelaのアクセストークン
 - `SLACK_TOKEN`: 手順2-5で取得したSlack Appのトークン
-- `SLACK_VERIFICATION_TOKEN`: 手順2-6で取得したリクエスト検証トークン
+- `SLACK_SIGNING_SECRET`: 手順2-6で取得したリクエスト署名検証secret
 
 #### Herokuで動かす場合
 
