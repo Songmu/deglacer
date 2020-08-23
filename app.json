@@ -1,13 +1,13 @@
 {
-  "name": "deglacer",
-  "description": "Slack App for unfurling Kibela URL",
+  "name": "notion-deglacer",
+  "description": "Slack App for unfurling Notion URL",
   "keywords": [
     "go",
     "slack",
-    "kibela"
+    "Notion"
   ],
-  "website": "http://github.com/Songmu/deglacer",
-  "repository": "http://github.com/Songmu/deglacer",
+  "website": "http://github.com/MH4GF/notion-deglacer",
+  "repository": "http://github.com/MH4GF/notion-deglacer",
   "env": {
     "SLACK_TOKEN": {
       "description": "Slack OAuth Access Token"
@@ -15,11 +15,8 @@
     "SLACK_SIGNING_SECRET": {
       "description": "Slack Signing Secret to verify signature"
     },
-    "KIBELA_TEAM": {
-      "description": "Kibela Team Name"
-    },
-    "KIBELA_TOKEN": {
-      "description": "Kibela Access Token"
+    "NOTION_TOKEN": {
+      "description": "Notion auth token"
     }
   }
 }

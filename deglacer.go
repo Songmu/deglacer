@@ -11,12 +11,10 @@ import (
 	"net/url"
 	"os"
 	"os/signal"
-	"regexp"
-	"strconv"
 	"strings"
 	"syscall"
 
-	"github.com/Songmu/kibelasync/kibela"
+	"github.com/kjk/notionapi"
 	"github.com/slack-go/slack"
 	"github.com/slack-go/slack/slackevents"
 	"golang.org/x/sync/errgroup"
@@ -53,20 +51,16 @@ func Run(argv []string) error {
 }
 
 var (
-	kibelaCli          *kibela.Kibela
+	notionClient       *notionapi.Client
 	slackCli           *slack.Client
-	kibelaTeam         string
 	slackSigningSecret string
 )
 
 func initialize() error {
-	// KIBELA_TOKEN and KIBELA_TEAM are required
-	var err error
-	kibelaCli, err = kibela.New("0.0.1+deglacer")
-	if err != nil {
-		return err
+	notionToken := os.Getenv("NOTION_TOKEN")
+	notionClient = &notionapi.Client{
+		AuthToken: notionToken,
 	}
-	kibelaTeam = os.Getenv("KIBELA_TEAM")
 	slackSigningSecret = os.Getenv("SLACK_SIGNING_SECRET")
 	if slackSigningSecret == "" {
 		return errors.New("env SLACK_SIGNING_SECRET required")
@@ -147,17 +141,11 @@ func index(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-var (
-	noteReg     = regexp.MustCompile(`^/(?:@[^/]+|notes)/([0-9]+)`)
-	fragmentReg = regexp.MustCompile(`(?i)^comment_([0-9]+)`)
-	spacesReg   = regexp.MustCompile(`\s+`)
-)
-
 func callback(ctx context.Context, ev *slackevents.LinkSharedEvent) error {
 	unfurls := make(map[string]slack.Attachment, len(ev.Links))
 
 	for _, link := range ev.Links {
-		if !strings.HasSuffix(link.Domain, ".kibe.la") {
+		if !strings.HasSuffix(link.Domain, ".notion.so") {
 			continue
 		}
 		u, err := url.Parse(link.URL)
@@ -165,45 +153,18 @@ func callback(ctx context.Context, ev *slackevents.LinkSharedEvent) error {
 			log.Println(err)
 			continue
 		}
-		m := noteReg.FindStringSubmatch(u.Path)
-		if len(m) < 2 {
-			continue
-		}
-		id, _ := strconv.Atoi(m[1])
-		note, err := kibelaCli.GetNote(ctx, id)
+		pageID := notionapi.ExtractNoDashIDFromNotionURL(u.String())
+		page, err := notionClient.DownloadPage(pageID)
 		if err != nil {
-			log.Println(err)
-			continue
+			return err
 		}
-		var (
-			author      = note.Author
-			title       = note.Title
-			text        = note.Summary
-			publishedAt = note.PublishedAt
-		)
-		if m := fragmentReg.FindStringSubmatch(u.Fragment); len(m) > 1 {
-			id, _ := strconv.Atoi(m[1])
-			comment, err := kibelaCli.GetComment(ctx, id)
-			if err != nil {
-				log.Println(err)
-				continue
-			}
-			author = comment.Author
-			title = fmt.Sprintf(`comment for "%s"`, title)
-			text = comment.Summary
-			publishedAt = comment.PublishedAt
-		}
+
+		fmt.Println(page.Root().Title)
+
 		unfurls[link.URL] = slack.Attachment{
-			// We can't use kibela's avatar URL for an icon, because it's not a public resource.
-			// AuthorIcon: author.AvatarImage.URL
-			AuthorLink: fmt.Sprintf("https://%s.kibe.la/@%s", kibelaTeam, author.Account),
-			AuthorName: author.Account,
-			Title:      title,
-			TitleLink:  link.URL,
-			Text:       spacesReg.ReplaceAllString(text, " "),
-			Footer:     "Kibela",
-			FooterIcon: "https://cdn.kibe.la/assets/shortcut_icon-99b5d6891a0a53624ab74ef26a28079e37c4f953af6ea62396f060d3916df061.png",
-			Ts:         json.Number(fmt.Sprintf("%d", publishedAt.Time.Unix())),
+			Title:     page.Root().Title,
+			TitleLink: link.URL,
+			Footer:     "Notion",
 		}
 	}
 
