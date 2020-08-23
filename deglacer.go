@@ -153,6 +153,11 @@ func callback(ctx context.Context, ev *slackevents.LinkSharedEvent) error {
 			log.Println(err)
 			continue
 		}
+
+		// notionapi can't parse query parameter
+		u.RawQuery = ""
+		u.Fragment = ""
+
 		pageID := notionapi.ExtractNoDashIDFromNotionURL(u.String())
 		page, err := notionClient.DownloadPage(pageID)
 		if err != nil {
