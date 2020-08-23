@@ -2,43 +2,40 @@ deglacer
 =======
 
 [![MIT License](http://img.shields.io/badge/license-MIT-blue.svg?style=flat-square)][license]
-[![GoDoc](https://godoc.org/github.com/Songmu/deglacer?status.svg)][godoc]
+[![GoDoc](https://godoc.org/github.com/MH4GF/notion-deglacer?status.svg)][godoc]
 
-[actions]: https://github.com/Songmu/deglacer/actions?workflow=test
-[license]: https://github.com/Songmu/deglacer/blob/master/LICENSE
-[godoc]: https://godoc.org/github.com/Songmu/deglacer
+[actions]: https://github.com/MH4GF/notion-deglacer/actions?workflow=test
+[license]: https://github.com/MH4GF/notion-deglacer/blob/master/LICENSE
+[godoc]: https://godoc.org/github.com/MH4GF/notion-deglacer
 
-KibelaリンクをSlack上で展開してくれる君
+NotionリンクをSlack上で展開してくれる君
 
 ## Description
 
-deglacerはkibelaのリンクがSlackに投稿された際に、それを展開してくれるSlack Appです。以下の機能を備えています。
+notino-deglacerはNotionのリンクがSlackに投稿された際に、それを展開してくれるSlack Appです。以下の機能を備えています。
 
-- kibelaの記事の展開
-- kibelaのコメントの展開
-
-deglacerは木べらを用いる調理手法である、déglacer(デグラッセ)から命名しました。
+- Notionの記事タイトル展開
+  
+note: Notionの非公式なAPIクライアントを利用しています。Notion側が意図しない利用方法のため、リスクを承知の上利用してください。
 
 ## Installation
 
-1. Kibelaアクセストークン取得
+1. Notionのアクセストークン取得
 2. Slack App作成
-3. deglacerのデプロイ
+3. notion-deglacerのデプロイ
 4. 2で作ったappに、3のURLを登録する
 5. Slack Appのbotユーザーをチャンネルに招待する
 
-### 1. Kibelaアクセストークン取得
+### 1. Notionアクセストークン取得
 
-以下のURLからアクセストークンを作成します(`KIBELA_TOKEN`)。権限はreadのみで大丈夫です。
-
-<https://my.kibe.la/settings/access_tokens>
+[この記事](https://presstige.io/p/Using-Notion-API-Go-client-2567fcfa8f7a4ed4bdf6f6ec9298d34a)の Accessing non-public pages を参考にしながらアクセストークンを取得してください。
 
 ### 2. Slack Appの作成
 
 1. https://api.slack.com/apps の Create New App からアプリ作成
 2. 左メニュー OAuth & Permissions を開き、Scopesでlink:writeを追加
 3. 左メニュー Event Subscriptions を開く
-    - App unfurl domains を展開し、 Add Domain で、 {`KIBELA_TEAM`}.kibe.la を入力し、Save Changes
+    - App unfurl domains を展開し、 Add Domain で、 `www.notion.so` を入力し、Save Changes
 4. 左メニュー Install App を開き、 Install App to Workspace -> Allow
 5. OAuth Access Token が表示されるのでメモ (`SLACK_TOKEN`)
 6. Basic Information を開き App CredentialsのSigning Secretをメモ (`SLACK_SIGNING_SECRET`)
@@ -49,8 +46,7 @@ deglacerは木べらを用いる調理手法である、déglacer(デグラッ�
 
 deglacerはGoで書かれたWebアプリケーションなので、任意の場所で簡単に動かせますが、HerokuやGoogle App Engineを利用するのがより簡単でしょう。動作のためには以下の環境変数が必要です。
 
-- `KIBELA_TEAM`: Kibelaのチーム名
-- `KIBELA_TOKEN`: 手順1で取得したKibelaのアクセストークン
+- `NOTION_TOKEN`: 手順1で取得したNotionのアクセストークン
 - `SLACK_TOKEN`: 手順2-5で取得したSlack Appのトークン
 - `SLACK_SIGNING_SECRET`: 手順2-6で取得したリクエスト署名検証secret
 
@@ -59,14 +55,6 @@ deglacerはGoで書かれたWebアプリケーションなので、任意の場�
 以下のボタンからデプロイできます。
 
 [![Deploy](https://www.herokucdn.com/deploy/button.svg)](https://heroku.com/deploy)
-
-#### Google App Engineで動かす場合
-
-1. 事前にgcloudコマンドのインストールやGCP上のアプリの作成をおこなう
-    - ref. https://cloud.google.com/appengine/docs/standard/go/quickstart#before-you-begin
-2. 当リポジトリをcloneする
-3. `secret.yaml` に設定項目を記述する(`secret.yaml.example`を参考に)
-4. `gcloud app deploy` でデプロイ
 
 ### 4. 2で作ったappに、3のURLを登録する
 
@@ -81,12 +69,10 @@ Bot名は、左メニューのApp Homeから確認してください。
 
 ## See Also
 
-deglacerはotofune/slack-unfurl-kibelaのRuby実装を参考に移植しました。設定にあたっては、higebuさんのエントリが非常に参考になりました。
-
-- https://github.com/higebu/slack-app-unfurl-kibela
-    - https://www.higebu.com/blog/2019/12/04/slack-app-unfurl-kibela/
-- https://github.com/otofune/slack-unfurl-kibela
+notion-deglacerは[Songmu](https://github.com/Songmu)さんのリポジトリをフォークして作られています。    
+[https://github.com/Songmu/deglacer](https://github.com/Songmu/deglacer)  
+Webサーバーの処理、Slackへの送信処理の大半をそのまま利用させていただいています。この場をお借りして御礼申し上げます。ありがとうございました！
 
 ## Author
 
-[Songmu](https://github.com/Songmu)
+[miya](https://github.com/MH4GF)

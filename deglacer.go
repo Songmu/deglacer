@@ -164,14 +164,15 @@ func unfurl(ev *slackevents.LinkSharedEvent) {
 		title := page.Root().Title
 		if title == "" {
 			title = page.Root().TableViews[0].Collection.GetName()
+
+			if title == "" {
+				log.Println("title is not found")
+				continue
+			}
 		}
 		fmt.Println(title)
 
-		if title == "" {
-			log.Println("title is not found")
-			continue
-		}
-
+		// TODO: Add the text in the first block of the page
 		unfurls[link.URL] = slack.Attachment{
 			Title:     title,
 			TitleLink: link.URL,
