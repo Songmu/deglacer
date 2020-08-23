@@ -128,11 +128,7 @@ func index(w http.ResponseWriter, r *http.Request) {
 				w.WriteHeader(http.StatusBadRequest)
 				return
 			}
-			if err := callback(r.Context(), inEv); err != nil {
-				log.Println(err)
-				w.WriteHeader(http.StatusInternalServerError)
-				return
-			}
+			go unfurl(inEv)
 			fmt.Fprint(w, "ok")
 			return
 		}
@@ -141,7 +137,7 @@ func index(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func callback(ctx context.Context, ev *slackevents.LinkSharedEvent) error {
+func unfurl(ev *slackevents.LinkSharedEvent) {
 	unfurls := make(map[string]slack.Attachment, len(ev.Links))
 
 	for _, link := range ev.Links {
@@ -161,21 +157,34 @@ func callback(ctx context.Context, ev *slackevents.LinkSharedEvent) error {
 		pageID := notionapi.ExtractNoDashIDFromNotionURL(u.String())
 		page, err := notionClient.DownloadPage(pageID)
 		if err != nil {
-			return err
+			log.Println(err)
+			continue
 		}
 
-		fmt.Println(page.Root().Title)
+		title := page.Root().Title
+		if title == "" {
+			title = page.Root().TableViews[0].Collection.GetName()
+		}
+		fmt.Println(title)
+
+		if title == "" {
+			log.Println("title is not found")
+			continue
+		}
 
 		unfurls[link.URL] = slack.Attachment{
-			Title:     page.Root().Title,
+			Title:     title,
 			TitleLink: link.URL,
 			Footer:     "Notion",
 		}
 	}
 
 	if len(unfurls) == 0 {
-		return nil
+		return
 	}
-	_, _, err := slackCli.PostMessageContext(ctx, ev.Channel, slack.MsgOptionUnfurl(ev.MessageTimeStamp.String(), unfurls))
-	return err
+
+	_, _, err := slackCli.PostMessage(ev.Channel, slack.MsgOptionUnfurl(ev.MessageTimeStamp.String(), unfurls))
+	if err != nil {
+		log.Println(err)
+	}
 }
