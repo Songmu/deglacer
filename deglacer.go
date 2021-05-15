@@ -14,6 +14,7 @@ import (
 	"strings"
 	"syscall"
 
+	"github.com/MH4GF/notion-deglacer/notion"
 	"github.com/kjk/notionapi"
 	"github.com/slack-go/slack"
 	"github.com/slack-go/slack/slackevents"
@@ -51,14 +52,16 @@ func Run(argv []string) error {
 }
 
 var (
-	notionClient       *notionapi.Client
+	oldNotionClient    *notionapi.Client
+	notionClient       *notion.Client
 	slackCli           *slack.Client
 	slackSigningSecret string
 )
 
 func initialize() error {
 	notionToken := os.Getenv("NOTION_TOKEN")
-	notionClient = &notionapi.Client{
+	oldNotionClient = &notionapi.Client{}
+	notionClient = &notion.Client{
 		AuthToken: notionToken,
 	}
 	slackSigningSecret = os.Getenv("SLACK_SIGNING_SECRET")
@@ -150,25 +153,22 @@ func unfurl(ev *slackevents.LinkSharedEvent) {
 			continue
 		}
 
+		// official notion api does not provide retrieving pageID
+		// because notionapi library is only used to extract pageID
 		// notionapi can't parse query parameter
 		u.RawQuery = ""
 		u.Fragment = ""
-
 		pageID := notionapi.ExtractNoDashIDFromNotionURL(u.String())
-		page, err := notionClient.DownloadPage(pageID)
+
+		page, err := notionClient.RetrievePage(pageID)
 		if err != nil {
 			log.Println(err)
 			continue
 		}
 
-		title := page.Root().Title
+		title := page.PageTitle()
 		if title == "" {
-			title = page.Root().TableViews[0].Collection.GetName()
-
-			if title == "" {
-				log.Println("title is not found")
-				continue
-			}
+			log.Println("title is not found")
 		}
 		fmt.Println(title)
 
@@ -176,7 +176,7 @@ func unfurl(ev *slackevents.LinkSharedEvent) {
 		unfurls[link.URL] = slack.Attachment{
 			Title:     title,
 			TitleLink: link.URL,
-			Footer:     "Notion",
+			Footer:    "Notion",
 		}
 	}
 
