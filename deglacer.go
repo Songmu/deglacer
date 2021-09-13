@@ -82,7 +82,7 @@ func initialize() error {
 func index(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case http.MethodGet:
-		fmt.Fprintf(w, "Hello")
+		fmt.Fprintf(w, "Hello! (deglacer version: %s, rev: %s)", version, revision)
 	case http.MethodPost:
 		body, err := ioutil.ReadAll(r.Body)
 		if err != nil {
