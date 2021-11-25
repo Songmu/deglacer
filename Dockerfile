@@ -6,6 +6,8 @@ ENV APP_ROOT /deglacer/
 WORKDIR $APP_ROOT
 COPY . $APP_ROOT
 
+ARG BUILD_VERSION=unknown
+ARG BUILD_HASH=unknown
 RUN make build
 
 FROM golang:alpine
