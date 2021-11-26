@@ -87,6 +87,24 @@ deglacerはotofune/slack-unfurl-kibelaのRuby実装を参考に移植しまし�
     - https://www.higebu.com/blog/2019/12/04/slack-app-unfurl-kibela/
 - https://github.com/otofune/slack-unfurl-kibela
 
+## docker imageのbuild方法
+
+docker imageをbuildして、 imageに `deglacer:latest` というタグをつけます。
+```
+make docker.build
+```
+
+## docker imageをcontainer registroyにpushする方法
+
+### ECRへ
+
+ECRへのpushは以下のようになります。
+`account_id`, `region_name` は自分が使っているものに置き換えてください。
+
+```
+docker push account_id.dkr.ecr.region_name.amazonaws.com/deglacer:latest
+```
+
 ## Author
 
 [Songmu](https://github.com/Songmu)
