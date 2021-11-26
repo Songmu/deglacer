@@ -10,7 +10,7 @@ ARG BUILD_VERSION=unknown
 ARG BUILD_HASH=unknown
 RUN make build
 
-FROM golang:alpine
+FROM gcr.io/distroless/base-debian10
 
 COPY --from=build /deglacer/bin /bin
 

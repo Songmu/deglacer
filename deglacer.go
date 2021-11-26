@@ -56,18 +56,22 @@ var (
 	kibelaCli          *kibela.Kibela
 	slackCli           *slack.Client
 	kibelaTeam         string
+  kibelaToken        string
 	slackSigningSecret string
 )
 
 func initialize() error {
 	// KIBELA_TOKEN and KIBELA_TEAM are required
 	var err error
+  log.Printf("Begin initialize\n")
 	kibelaCli, err = kibela.New("0.0.1+deglacer")
 	if err != nil {
 		return err
 	}
 	kibelaTeam = os.Getenv("KIBELA_TEAM")
+  kibelaToken = os.Getenv("KIBELA_TOKEN")
 	slackSigningSecret = os.Getenv("SLACK_SIGNING_SECRET")
+  log.Printf("KIBELA_TOKEN: %s, KIBELA_TOKEN: %s, SLACK_SIGNING_SECRET: %s\n", kibelaTeam, kibelaToken, slackSigningSecret)
 	if slackSigningSecret == "" {
 		return errors.New("env SLACK_SIGNING_SECRET required")
 	}
@@ -76,6 +80,7 @@ func initialize() error {
 		return errors.New("env SLACK_TOKEN is empty")
 	}
 	slackCli = slack.New(slackToken)
+  log.Printf("End initialize\n")
 	return nil
 }
 
@@ -85,6 +90,7 @@ func index(w http.ResponseWriter, r *http.Request) {
 		fmt.Fprintf(w, "Hello! (deglacer version: %s, rev: %s)", version, revision)
 	case http.MethodPost:
 		body, err := ioutil.ReadAll(r.Body)
+    log.Println(body)
 		if err != nil {
 			log.Println(err)
 			w.WriteHeader(http.StatusBadRequest)
