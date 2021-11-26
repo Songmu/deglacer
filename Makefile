@@ -2,7 +2,7 @@ VERSION = $(shell godzil show-version)
 CURRENT_REVISION = $(shell git rev-parse --short HEAD)
 IMAGE_NAME ?= deglacer
 BUILD_HASH ?= $(shell git rev-parse --verify HEAD 2> /dev/null || echo unknown)
-BUILD_LDFLAGS = "-s -w -X github.com/Songmu/deglacer.revision=$(CURRENT_REVISION)"
+BUILD_LDFLAGS = "-s -w -X github.com/Songmu/deglacer.revision=$(CURRENT_REVISION) -extldflags \"-static\""
 u := $(if $(update),-u)
 
 .PHONY: deps
